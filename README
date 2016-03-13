@@ -8,9 +8,8 @@ INSTALL
 =======
 
 In order to use the LIVE DVD, a mounted/writable filesystem is needed.  The script
-  mounts this to /usr/local/var to do its work.  This may be a place in your home
-  directory or /tmp if you have enough memory in your computer or gave your VM.
-  By default, the script will use $HOME/var and link it to /usr/local/var
+  uses $HOME/var to do its work.  If this doesn't have enough space (about 65M)
+  then edit setup.sh to pick a different location.
 
 See Makefile for details.
 
