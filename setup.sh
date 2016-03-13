@@ -2,9 +2,8 @@
 # NB: the below line is to create a mountable/writable filesystem to /usr/local/var
 #     the mount point will be different on every system/VM.  it must be world-writable/readable
 # ln -s /media/ubuntu/2917309f-7599-4b7a-8fb6-1708ffc4050c/var /usr/local/var
-# ugh.. its just a hassle.  Use $HOME/var, or whatever...
-WRITABLE=$HOME/var
-mkdir ${WRITABLE}
+# ugh.. its just a hassle.  Use $HOME/var, or whatever...  but it needs to exist
+WRITABLE=/usr/local/var
 
 # Installing dependencies (from simple_ra/README)
 sudo pip install ephem
