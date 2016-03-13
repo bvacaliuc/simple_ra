@@ -10,11 +10,13 @@ sudo pip install ephem
 mkdir ${HOME}/bin
 echo "export PATH=\"$HOME/bin;${PATH}\"" >> $HOME/.bashrc
 echo "export PYTHONPATH=\"$HOME/bin;${PYTHONPATH}\"" >> $HOME/.bashrc
-source ${HOME}/.bashrc
+export PATH="$HOME/bin;${PATH}"
+export PYTHONPATH="$HOME/bin;${PYTHONPATH}"
+
 # simple_ra/README says to use svn, but the repos has moved...
 ##svn co https://www.cgran.org/svn/projects/gr-ra_blocks
 (cd ${WRITABLE} ; git clone https://github.com/patchvonbraun/gr-ra_blocks.git)
-(cd ${WRITABLE}/gr-ra_blocks/trunk ; cmake . ; make ; sudo make install ; sudo ldconfig)
+(cd ${WRITABLE}/gr-ra_blocks ; cmake . ; make ; sudo make install ; sudo ldconfig)
 
 # get simple_ra, build it
 (cd ${WRITABLE} ; git clone https://github.com/patchvonbraun/simple_ra.git)
