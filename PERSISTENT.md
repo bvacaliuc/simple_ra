@@ -39,6 +39,8 @@ Step #7: navigate to the src/simple_ra/ on the persistent USB disk and issue the
 make reinstall
 ```
 
+NEW: You can double-click the desktop script titled 'Re-install simple_ra from persistent USB disk' as an alternative to executing the above command in a terminal.
+
 Step #8: enjoy simple_ra with the Gnu Radio Live DVD
 
 ```

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=bash -c '(df -h ; echo "\nType a string to uniquely identify the mounted USB disk"; read udev ; mnt=`df -h | grep $udev | tr -s " " | cut -f6 -d" "` ; echo mnt=${mnt} ; if cd ${mnt}/src/simple_ra ; then pwd ; ./reinstall.sh ; fi ; echo "\nPress Enter to continue..." ; read foo)'
+Name=Re-install simple_ra from persistent USB disk
+Terminal=true
+Type=Application
+
