@@ -1,6 +1,7 @@
 #!/bin/sh
 # Configure a (writable) DISK (USB,SSD,HDD,etc.) to hold installed programs and data
 WRITABLE=${1:-/usr/local/var}
+expert=0
 
 echo 'Ensure you have the disk you wish to use for persistent storage connected'
 echo 'and that it is listed in the following table:'
@@ -20,8 +21,22 @@ echo udev=${udev}
 
 if [ -z "${dev}" -o -z "${mnt}" ] ; then
 	echo '\nYour choice did not match an existing device or mount'
-	echo 'try again...'
-	exit 1
+	if [ -b "${udev}" ] ; then
+		echo 'But it is a valid block device, so it could be used.'
+		echo 'Do you want to use this device?  The partition table is as follows:'
+		sudo fdisk -l ${udev}
+		echo 'Are you sure you want to use this DISK?  You must type "yes"'
+		read res
+		if [ ! ${res} = "yes" ] ; then
+			exit 1
+		fi
+		expert=1	# prevent media check later..
+		dev=${udev}1
+		mnt=/mnt
+	else
+		echo 'try again...'
+		exit 1
+	fi
 fi
 if [ ! -b "${dev}" -o ! -d "${mnt}" ] ; then
 	echo '\nEither dev is not a device or mnt is not a folder'
@@ -30,10 +45,12 @@ if [ ! -b "${dev}" -o ! -d "${mnt}" ] ; then
 fi
 echo '\nUsing:'
 if ! (echo "${mnt}" | grep media) ; then
-	echo '\nThe device you selected is not a media device.'
-	echo 'This will not likely have the effect you want and'
-	echo 'I am too cowardly to go on, so please try again...'
-	exit 1
+	if [ $expert -ne 1 ] ; then
+		echo '\nThe device you selected is not a media device.'
+		echo 'This will not likely have the effect you want and'
+		echo 'I am too cowardly to go on, so please try again...'
+		exit 1
+	fi
 fi
 
 # http://stackoverflow.com/questions/16623835/bash-remove-a-fixed-prefix-suffix-from-a-string
