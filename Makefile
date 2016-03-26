@@ -22,5 +22,5 @@ persistent:
 
 # create folder (when not using persistent media)
 ${WRITABLE}:
-	mkdir -p ${WRITABLE}
+	sudo mkdir -p ${WRITABLE}
 
