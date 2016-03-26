@@ -13,6 +13,8 @@ git clone https://github.com/bvacaliuc/simple_ra.git
 
 Step #3: insert the USB disk that you would like to use
 
+NOTE: It make take a little while for the disk to be recognized.  Please wait until it shows up before going to the next step.  Also, please remember that the ENTIRE disk will be wiped by this automated sequence, but that it does help if the disk is already formatted ahead of time to help identify it.
+
 Step #4: prepare the USB disk for persistent data
 
 ```
