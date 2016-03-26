@@ -36,8 +36,13 @@ if ! (echo "${mnt}" | grep media) ; then
 	exit 1
 fi
 
-echo "\nInitializing ${dev} for persistent storage"
-echo '*** LAST chance to stop before wiping the disk ***'
+# http://stackoverflow.com/questions/16623835/bash-remove-a-fixed-prefix-suffix-from-a-string
+dev1=${dev%%[0-9]}
+part=${dev#${dev1}}
+sudo fdisk -l ${dev1}
+
+echo "\nInitializing ${dev1}, partition ${part} for persistent storage"
+echo '*** LAST chance to stop before wiping the ENTIRE disk ***'
 echo ''
 echo 'Are you sure you are ready to do this?  You must type "yes"'
 read res
@@ -45,24 +50,44 @@ if [ ! ${res} = "yes" ] ; then
 	exit 1
 fi
 
-# TEMPORARY: remove
-echo "*** next steps are to unmount/partition and create the filesystem"
-echo "    but they have yet to be implemented"
-
 # unmount the disk
+sudo umount ${mnt}
 
-# redefine the partition type
+# partition the disk and set the partition type
+#http://superuser.com/questions/332252/creating-and-formating-a-partition-using-a-bash-script
+sed -e 's/\t\([\+0-9a-zA-Z]*\)[ \t].*/\1/' << EOF | sudo fdisk ${dev1}
+	o # clear the in memory partition table
+	n # new partition
+	p # primary partition
+	1 # partition number 1
+	 # default - start at beginning of disk 
+	 # default - use the entire disk
+	t # change partition type
+	83 # Linux partition
+	p # print the in-memory partition table
+	w # write the partition table
+	q # and we're done
+EOF
 
 # create a file system
+sudo mke2fs ${dev}
 
 # re-mount the file system
+sudo mount ${dev} /mnt
 
 # create the /src, /var folders and copy the project to the /src
+sudo chmod a+w /mnt
+mkdir /mnt/src
+mkdir /mnt/var
+cwd=`pwd`
+cp -r ../$(basename $cwd) /mnt/src
+
+# re-create the symbolic link to the persistent media
+if [ ! -d ${WRITABLE} -o ! -L ${WRITABLE} ] ; then
+	sudo ln -s -f /mnt/var ${WRITABLE}
+fi
 
 
-
-
-# create a 
 
 
 
