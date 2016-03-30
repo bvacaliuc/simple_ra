@@ -7,12 +7,12 @@ WRITABLE=${1:-/usr/local/var}
 
 # Configure dependencies (from simple_ra/README)
 if [ -z "`grep PATH ${HOME}/.bashrc | grep ${HOME}/bin`" ] ; then
-	echo "export PATH=\"${HOME}/bin;${PATH}\"" >> ${HOME}/.bashrc
-	export PATH="${HOME}/bin;${PATH}"
+	echo "export PATH=\"${HOME}/bin:${PATH}\"" >> ${HOME}/.bashrc
+	export PATH="${HOME}/bin:${PATH}"
 fi
 if [ -z "`grep PYTHONPATH ${HOME}/.bashrc | grep ${HOME}/bin`" ] ; then
-	echo "export PYTHONPATH=\"${HOME}/bin;${PYTHONPATH}\"" >> ${HOME}/.bashrc
-	export PYTHONPATH="${HOME}/bin;${PYTHONPATH}"
+	echo "export PYTHONPATH=\"${HOME}/bin:${PYTHONPATH}\"" >> ${HOME}/.bashrc
+	export PYTHONPATH="${HOME}/bin:${PYTHONPATH}"
 fi
 
 # Installing dependencies (from simple_ra/README)
@@ -22,6 +22,12 @@ mkdir -p ${WRITABLE}/pyephem
 echo "3d6c19d92a2a80fef87770f3e2007453 pyephem-3.7.6.0.tar.gz" > ${WRITABLE}/pyephem/md5sum.txt
 (cd ${WRITABLE}/pyephem ; wget https://pypi.python.org/packages/source/p/pyephem/pyephem-3.7.6.0.tar.gz ; md5sum -c md5sum.txt )
 sudo pip install ${WRITABLE}/pyephem/pyephem-3.7.6.0.tar.gz
+
+# simple_ra requires gawk (and GNU Radio Live DVD installs 4.1.0 using apt-get)
+mkdir -p ${WRITABLE}/gawk
+echo "bab2bda483e9f32be65b43b8dab39fa5 gawk-4.0.1.tar.gz" > ${WRITABLE}/gawk/md5sum.txt
+(cd ${WRITABLE}/gawk ; wget http://ftp.gnu.org/gnu/gawk/gawk-4.0.1.tar.gz ; md5sum -c md5sum.txt )
+(cd /tmp ; tar xf ${WRITABLE}/gawk/gawk-4.0.1.tar.gz ; cd gawk-4.0.1 ; ./configure ; make ; sudo make install )
 
 # simple_ra/README says to use svn, but the repos has moved...
 ##svn co https://www.cgran.org/svn/projects/gr-ra_blocks
@@ -40,7 +46,7 @@ echo simple_ra is probably going to work...
 echo execute it from the command line by:
 echo
 echo cd ${HOME}/bin
-echo sudo ./simple_ra --devid rtl=0,buflen=65536 --spde
+echo sudo ./simple_ra --devid rtl=0,offset_tune=1 --spde
 echo 
 echo and when you are running in spectral mode, be sure to press 'Autoscale'
 #cd ${HOME}/bin
