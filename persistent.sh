@@ -11,7 +11,7 @@ read udev
 
 # obtain device path and mount point of selected disk
 dev=`df -h | grep $udev | tr -s ' ' | cut -f1 -d' '`
-mnt=`df -h | grep $udev | tr -s ' ' | cut -f6 -d' '`
+mnt=`df -h | grep $udev | tr -s ' ' | cut -f6- -d' ' --output-delimiter=',' | tr -d ','`
 
 echo '\nSelected:'
 echo WRITABLE=${WRITABLE}
@@ -39,7 +39,7 @@ if [ -z "${dev}" -o -z "${mnt}" ] ; then
 	fi
 fi
 if [ ! -b "${dev}" -o ! -d "${mnt}" ] ; then
-	echo '\nEither dev is not a device or mnt is not a folder'
+	echo "\nEither dev is not a device or '${mnt}' is not a folder"
 	echo 'try again...'
 	exit 1
 fi
@@ -68,7 +68,7 @@ if [ ! ${res} = "yes" ] ; then
 fi
 
 # unmount the disk
-sudo umount ${mnt}
+sudo umount "${mnt}"
 
 # partition the disk and set the partition type
 #http://superuser.com/questions/332252/creating-and-formating-a-partition-using-a-bash-script
@@ -96,6 +96,7 @@ sudo mount ${dev} /mnt
 sudo chmod a+w /mnt
 mkdir /mnt/src
 mkdir /mnt/var
+mkdir /mnt/simple_ra_data
 cwd=`pwd`
 cp -r ../$(basename $cwd) /mnt/src
 
@@ -103,6 +104,15 @@ cp -r ../$(basename $cwd) /mnt/src
 if [ ! -d ${WRITABLE} -o ! -L ${WRITABLE} ] ; then
 	sudo ln -s -f /mnt/var ${WRITABLE}
 fi
+
+# create or copy the /simple_ra_data, link to it
+if [ -d ${HOME}/simple_ra_data ] ; then
+	sudo cp -r ${HOME}/simple_ra_data /mnt/simple_ra_data
+	sudo mv ${HOME}/simple_ra_data ${HOME}/simple_ra_data.copied-to-persistent
+else
+	mkdir /mnt/simple_ra_data
+fi
+sudo ln -s -f /mnt/simple_ra_data ${HOME}/simple_ra_data
 
 
 
