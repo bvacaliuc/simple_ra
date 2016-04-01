@@ -11,7 +11,7 @@ read udev
 
 # obtain device path and mount point of selected disk
 dev=`df -h | grep $udev | tr -s ' ' | cut -f1 -d' '`
-mnt=`df -h | grep $udev | tr -s ' ' | cut -f6- -d' ' --output-delimiter=',' | tr -d ','`
+mnt=`df -h | grep $udev | cut -c39-`
 
 echo '\nSelected:'
 echo WRITABLE=${WRITABLE}
@@ -19,7 +19,7 @@ echo dev=${dev}
 echo mnt=${mnt}
 echo udev=${udev}
 
-if [ -z "${dev}" -o -z "${mnt}" ] ; then
+if [ -z "${dev}" -o -z "${mnt}" -o -b "${udev}" ] ; then
 	echo '\nYour choice did not match an existing device or mount'
 	if [ -b "${udev}" ] ; then
 		echo 'But it is a valid block device, so it could be used.'
@@ -96,14 +96,17 @@ sudo mount ${dev} /mnt
 sudo chmod a+w /mnt
 mkdir /mnt/src
 mkdir /mnt/var
-mkdir /mnt/simple_ra_data
 cwd=`pwd`
 cp -r ../$(basename $cwd) /mnt/src
 
-# re-create the symbolic link to the persistent media
-if [ ! -d ${WRITABLE} -o ! -L ${WRITABLE} ] ; then
-	sudo ln -s -f /mnt/var ${WRITABLE}
+# copy any items in the writable folder then ensure it is a link to persistent
+if [ -d ${WRITABLE} ] ; then
+	sudo cp -r ${WRITABLE}/* /mnt/var
+	sudo mv ${WRITABLE} ${WRITABLE}.copied-to-persistent
+elif [ -L ${WRITABLE} ] ; then
+	sudo cp -r ${WRITABLE}/* /mnt/var
 fi
+sudo ln -s -f /mnt/var ${WRITABLE}
 
 # create or copy the /simple_ra_data, link to it
 if [ -d ${HOME}/simple_ra_data ] ; then
