@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=bash -c '(df -h ; echo "\nType a string to uniquely identify the mounted USB disk"; read udev ; mnt=`df -h | grep $udev | tr -s " " | cut -f6 -d" "` ; echo mnt=${mnt} ; cd ${mnt}/src/simple_ra && gnome-terminal)'
+Name=Open a Terminal here
+Terminal=true
+Type=Application
+
