@@ -31,6 +31,33 @@ if [ -z "`grep PYTHONPATH ${HOME}/.bashrc | grep ${HOME}/bin`" ] ; then
 	export PYTHONPATH="${HOME}/bin:${PYTHONPATH}"
 fi
 
+# check if files are present or not (maybe they forgot to build)
+if [ ! -f ${WRITABLE}/pyephem/pyephem-3.7.6.0.tar.gz -o \
+     ! -f ${WRITABLE}/gawk/gawk-4.0.1.tar.gz -o \
+     ! -d ${WRITABLE}/gr-ra_blocks -o \
+     ! -d ${WRITABLE}/simple_ra ] ; then
+	cat << EOF | cat
+
+One or more of the files/folders needed to reinstall simple_ra
+are missing.  Is it possible that you forgot a step?  If that
+is so, there is an easy fix!  Just make sure your network is
+connected, and then type:
+
+make
+
+Then, next time you have to reboot, you only need to type:
+
+make reinstall
+
+Like you were hoping to do this time, or use the desktop icon.
+
+(I'm not going to do it because I'm afraid.  But you might have
+enough courage to do it!)
+
+EOF
+	exit 1
+fi
+
 # re-install pyephem
 sudo pip install ${WRITABLE}/pyephem/pyephem-3.7.6.0.tar.gz
 
