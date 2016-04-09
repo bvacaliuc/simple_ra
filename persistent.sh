@@ -58,7 +58,8 @@ fi
 
 # http://stackoverflow.com/questions/16623835/bash-remove-a-fixed-prefix-suffix-from-a-string
 dev1=${dev%%[0-9]}
-part=${dev#${dev1}}
+part=1
+dev=${dev1}${part}
 sudo fdisk -l ${dev1}
 
 echo "\nInitializing ${dev1}, partition ${part} for persistent storage\n"
@@ -73,7 +74,29 @@ if [ ! ${res} = "yes" ] ; then
 fi
 
 # unmount the disk
-sudo umount "${mnt}"
+if sudo umount "${mnt}" ; then
+	# ok to go
+	echo ''
+else
+	cat << EOF | cat
+
+Unmounting the disk did not work.  Perhaps you are trying to run
+this script from the same disk you are targetting?
+That...  does not...  work...
+
+Try checking out the simple_ra/extras to the home directory
+and give it another go.  Like:
+
+$ cd $HOME
+$ git clone https://github.com/bvacaliuc/simple_ra
+$ cd simple_ra ; git checkout extras
+$ make persistent
+
+I'll bet that will work a little better the next time around...
+
+EOF
+	exit 1
+fi
 
 # partition the disk and set the partition type
 #http://superuser.com/questions/332252/creating-and-formating-a-partition-using-a-bash-script
@@ -105,18 +128,21 @@ cwd=`pwd`
 cp -r ../$(basename $cwd) /mnt/src
 
 # copy any items in the writable folder then ensure it is a link to persistent
-if [ -d ${WRITABLE} ] ; then
+if [ -d ${WRITABLE} -a ! -L ${WRITABLE} ] ; then
 	sudo cp -r ${WRITABLE}/* /mnt/var
 	sudo mv ${WRITABLE} ${WRITABLE}.copied-to-persistent
 elif [ -L ${WRITABLE} ] ; then
-	sudo cp -r ${WRITABLE}/* /mnt/var
+	sudo mv ${WRITABLE} ${WRITABLE}.before-link-changed
 fi
 sudo ln -s -f /mnt/var ${WRITABLE}
 
 # create or copy the /simple_ra_data, link to it
-if [ -d ${HOME}/simple_ra_data ] ; then
+if [ -d ${HOME}/simple_ra_data -a ! -L ${HOME}/simple_ra_data ] ; then
 	sudo cp -r ${HOME}/simple_ra_data /mnt/simple_ra_data
 	sudo mv ${HOME}/simple_ra_data ${HOME}/simple_ra_data.copied-to-persistent
+elif [ -L ${HOME}/simple_ra_data ] ; then
+	sudo mv ${HOME}/simple_ra_data ${HOME}/simple_ra_data.before-link-changed
+	mkdir /mnt/simple_ra_data
 else
 	mkdir /mnt/simple_ra_data
 fi
