@@ -31,15 +31,18 @@ if [ -z "${dev}" -o -z "${mnt}" -o -b "${udev}" ] ; then
 			exit 1
 		fi
 		expert=1	# prevent media check later..
-		dev=${udev}1
-		mnt=/mnt
+		dev=${udev}
+		# ensure $mnt is valid, but use the existing value
+		if [ ! -d "${mnt}" ] ; then
+			mnt=/mnt
+		fi
 	else
 		echo 'try again...'
 		exit 1
 	fi
 fi
 if [ ! -b "${dev}" -o ! -d "${mnt}" ] ; then
-	echo "\nEither dev is not a device or '${mnt}' is not a folder"
+	echo "\nEither '${dev}' is not a device or '${mnt}' is not a folder"
 	echo 'try again...'
 	exit 1
 fi
@@ -58,8 +61,10 @@ dev1=${dev%%[0-9]}
 part=${dev#${dev1}}
 sudo fdisk -l ${dev1}
 
-echo "\nInitializing ${dev1}, partition ${part} for persistent storage"
+echo "\nInitializing ${dev1}, partition ${part} for persistent storage\n"
+echo '*********************************************************'
 echo '*** LAST chance to stop before wiping the ENTIRE disk ***'
+echo '*********************************************************'
 echo ''
 echo 'Are you sure you are ready to do this?  You must type "yes"'
 read res
