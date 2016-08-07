@@ -2,8 +2,24 @@
 # NB: the below line is to create a mountable/writable filesystem to /usr/local/var
 #     the mount point will be different on every system/VM.  it must be world-writable/readable
 # ln -s /media/ubuntu/2917309f-7599-4b7a-8fb6-1708ffc4050c/var /usr/local/var
-# ugh.. its just a hassle.  Use $HOME/var, or whatever...  but it needs to exist
+# ugh.. its just a hassle.  Use $HOME/var, or whatever...  but it needs to exist... and writable
 WRITABLE=${1:-/usr/local/var}
+if [ ! -d ${WRITABLE} ] ; then
+	sudo mkdir -p ${WRITABLE}
+fi
+sudo chmod a+rwx ${WRITABLE}
+if ! touch ${WRITABLE}/.check ; then
+	echo "I must be able to write to ${WRITABLE}"
+	echo "I tried to fix it for you, but it didn't work."
+	echo "Please fix it, or tell me where else to put my stuff"
+	echo "by re-running this script with a different path; e.g."
+	echo ""
+	echo "$0 /a-folder-that-can-be-written-to"
+	exit 1
+fi
+
+# Where are we?
+plumb=`pwd`
 
 # Configure dependencies (from simple_ra/README)
 if [ -z "`grep PATH ${HOME}/.bashrc | grep ${HOME}/bin`" ] ; then
@@ -13,6 +29,80 @@ fi
 if [ -z "`grep PYTHONPATH ${HOME}/.bashrc | grep ${HOME}/bin`" ] ; then
 	echo "export PYTHONPATH=\"${HOME}/bin:${PYTHONPATH}\"" >> ${HOME}/.bashrc
 	export PYTHONPATH="${HOME}/bin:${PYTHONPATH}"
+fi
+
+# Determine GNU Radio version
+# https://github.com/bvacaliuc/simple_ra/issues/2
+version=`python -c "from gnuradio import gr ; print gr.version()"`
+major=`echo $version | cut -d. -f1`
+minor=`echo $version | cut -d. -f2`
+release=`echo $version | cut -d. -f3`
+patch=`echo $version | cut -d. -f4`
+
+if [ ! $major -eq 3 -o \( $major -eq 3 -a ! $minor -eq 7 \) ] ; then
+	echo "This appears to be GNU Radio version $version"
+	echo "I only know how to deal with version 3.7.x at the moment"
+	echo "If you are game to go on, so am I, but you have to say 'yes'"
+	read response
+	if [ ! "$response" = "yes" ] ; then
+		exit 1
+	fi
+# 3.7.x from now on...
+elif [ $release -lt 9 -o \( $release -eq 9 -a -z "$patch" \) ] ; then
+	echo "This appears to be GNU Radio version $version"
+	echo "I have not worked with GNU Radio versions less than 3.7.9.1"
+	echo "so I might do the wrong things.  Please be patient with me..."
+	echo ""
+	echo "Hit any key to go on."
+	read _junk
+elif [ $release -eq 10 -a -z "$patch" ] ; then
+	echo "Aha!  This is that GNU Radio version with Bug #927"
+	echo "http://gnuradio.org/redmine/issues/927"
+	echo ""
+	echo "I am going to apply the patch and go on.  I just want you"
+	echo "to be aware of this.  Hit any key to go on."
+	read _junk
+
+	# download and obtain the patch
+	# http://stackoverflow.com/questions/6658313/generate-a-git-patch-for-a-specific-commit
+	repo='https://github.com/gnuradio/gnuradio-wg-grc.git'
+	folder=`echo $repo | cut -d/ -f5 | cut -d. -f1`
+	sha='df86a6bf1ec0a1e628eba5e916859ba38c7c769c'
+	base='/usr/local/src/pybombs_legacy/src/gnuradio/gr-utils'
+	if [ ! -e ${WRITABLE}/$sha.patch ] ; then
+		git clone $repo
+		( cd $folder ; git format-patch -1 $sha --stdout ) > ${WRITABLE}/$sha.patch
+		if [ ! -e ${WRITABLE}/$sha.patch ] ; then
+			echo "Something went wrong...  I could not create the patch for you"
+			echo "Please report this issue at:"
+			echo "https://github.com/bvacaliuc/simple_ra/issues"
+			exit 1
+		fi
+	fi
+
+	# http://unix.stackexchange.com/questions/55780/check-if-a-file-or-folder-has-been-patched-already
+	patch -p2 -N --dry-run -d $base < ${WRITABLE}/$sha.patch
+	if [ $? -eq 0 ] ; then
+		# apply the patch to the current GNU Radio Live DVD
+		git apply --stat ${WRITABLE}/$sha.patch
+		sudo chmod a+rwx $base/python/utils		# patch wants to make a tmpfile named grcc.xxxx
+		sudo chmod a+rwx $base/python/utils/grcc	# patch needs to modify this file
+		patch -p2 -N -d $base < ${WRITABLE}/$sha.patch
+	fi
+	sudo chmod a+rwx /usr/local/bin/grcc			# and this is the file that we use
+	cp $base/python/utils/grcc /usr/local/bin/grcc
+elif [ $release -gt 10 ] ; then
+	echo "This appears to be GNU Radio version $version"
+	echo "I have not worked with GNU Radio versions greater than 3.7.10"
+	echo "so its anybody's guess what might happen."
+	echo ""
+	echo "If you are willing to have a go, so am I but don't blame me if it doesn't work."
+	echo "If you have enough 'courage' to go on, then type that, otherwise"
+	echo "I'm too afraid and you are on your own."
+	read response
+	if [ ! "$response" = "courage" ] ; then
+		exit 1
+	fi
 fi
 
 # Installing dependencies (from simple_ra/README)
