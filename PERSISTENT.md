@@ -3,6 +3,7 @@ Using a 2nd USB DISK for PERSISTENT storage and for off-line use
 
 Step #1: get a Gnu Radio Live DVD/USB up and running
 see: https://gnuradio.org/redmine/projects/gnuradio/wiki/GNURadioLiveDVD
+but beware of version 3.7.10 because of [this](https://github.com/bvacaliuc/simple_ra/issues/2).
 
 Step #2: clone and switch to extras branch
 
