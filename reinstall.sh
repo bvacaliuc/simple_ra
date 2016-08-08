@@ -71,12 +71,22 @@ sudo pip install ${WRITABLE}/pyephem/pyephem-3.7.6.0.tar.gz
 (cd ${WRITABLE}/simple_ra ; sudo make install)
 # this puts stuff in $HOME/bin
 
+if [ ! -x ${HOME}/bin/simple_ra ] ; then
+	echo "Bummer.  simple_ra did not get built where I expected it."
+	echo ""
+	echo "Well, if you don't mind, please report this issue at:"
+	echo "https://github.com/bvacaliuc/simple_ra/issues"
+	echo ""
+	echo "Please include the file ${WRITABLE}/reinstall.log"
+	exit 1
+fi
+
 # give a hint...
 echo simple_ra is probably going to work...
 echo execute it from the command line by:
 echo
 echo cd ${HOME}/bin
-echo sudo ./simple_ra --devid rtl=0,offset_tune=1 --spde
+echo sudo ./simple_ra --devid rtl=0,offset_tune=1
 echo 
 echo and when you are running in spectral mode, be sure to press 'Autoscale'
 #cd ${HOME}/bin
