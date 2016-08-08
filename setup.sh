@@ -108,10 +108,11 @@ fi
 # Installing dependencies (from simple_ra/README)
 #sudo pip install ephem
 # http://stackoverflow.com/questions/15031694/installing-python-packages-from-local-file-system-folder-with-pip
+# http://stackoverflow.com/questions/27870003/pip-install-please-check-the-permissions-and-owner-of-that-directory
 mkdir -p ${WRITABLE}/pyephem
 echo "3d6c19d92a2a80fef87770f3e2007453 pyephem-3.7.6.0.tar.gz" > ${WRITABLE}/pyephem/md5sum.txt
 (cd ${WRITABLE}/pyephem ; wget https://pypi.python.org/packages/source/p/pyephem/pyephem-3.7.6.0.tar.gz ; md5sum -c md5sum.txt )
-sudo pip install ${WRITABLE}/pyephem/pyephem-3.7.6.0.tar.gz
+sudo -H pip install ${WRITABLE}/pyephem/pyephem-3.7.6.0.tar.gz
 
 # simple_ra requires gawk (and GNU Radio Live DVD installs 4.1.0 using apt-get)
 mkdir -p ${WRITABLE}/gawk
@@ -131,12 +132,21 @@ echo "bab2bda483e9f32be65b43b8dab39fa5 gawk-4.0.1.tar.gz" > ${WRITABLE}/gawk/md5
 #cd ${HOME}/bin
 #sudo chown ubuntu:ubuntu simple_ra_receiver.py
 
+if [ ! -x ${HOME}/bin/simple_ra ] ; then
+	echo "Bummer.  simple_ra did not get built where I expected it."
+	echo ""
+	echo "Well, if you don't mind, please report this issue at:"
+	echo "https://github.com/bvacaliuc/simple_ra/issues"
+	echo ""
+	echo "Please include the file ${WRITABLE}/setup.log"
+	exit 1
+fi
 # give a hint...
 echo simple_ra is probably going to work...
 echo execute it from the command line by:
 echo
 echo cd ${HOME}/bin
-echo sudo ./simple_ra --devid rtl=0,offset_tune=1 --spde
+echo sudo ./simple_ra --devid rtl=0,offset_tune=1
 echo 
 echo and when you are running in spectral mode, be sure to press 'Autoscale'
 #cd ${HOME}/bin
