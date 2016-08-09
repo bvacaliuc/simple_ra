@@ -23,4 +23,5 @@ persistent:
 # create folder (when not using persistent media)
 ${WRITABLE}:
 	sudo mkdir -p ${WRITABLE}
+	sudo chmod a+rwx ${WRITABLE}
 
