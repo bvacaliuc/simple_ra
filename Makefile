@@ -8,7 +8,7 @@ WRITABLE=/usr/local/var
 # download/install - requires a network connection
 all:	${WRITABLE}
 	chmod a+x ./setup.sh
-	sudo ./setup.sh ${WRITABLE} | tee -a ${WRITABLE}/setup.log
+	./setup.sh ${WRITABLE} | tee -a ${WRITABLE}/setup.log
 
 # reinstall after reboot - assume $cwd on the persistent media
 reinstall:
