@@ -18,7 +18,8 @@ reinstall:
 # initialize persistent media
 persistent:
 	chmod a+x ./persistent.sh
-	./persistent.sh ${WRITABLE} | tee -a ${WRITABLE}/persistent.log
+	./persistent.sh ${WRITABLE} | tee -a /tmp/persistent.log
+	mv /tmp/persistent.log ${WRITABLE}/persistent.log
 
 # create folder (when not using persistent media)
 ${WRITABLE}:
