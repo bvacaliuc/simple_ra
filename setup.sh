@@ -39,6 +39,9 @@ minor=`echo $version | cut -d. -f2`
 release=`echo $version | cut -d. -f3`
 patch=`echo $version | cut -d. -f4`
 
+# diagnostic
+echo GNURadio Version $major.$minor.$release.$patch
+
 # implement certain variants
 simple_ra_sudo=
 
@@ -58,11 +61,14 @@ elif [ $release -lt 9 -o \( $release -eq 9 -a -z "$patch" \) ] ; then
 	echo ""
 	echo "Hit any key to go on."
 	read _junk
-elif [ $release -eq 9 -a $patch -eq 1 ] ; then
-	# 3.7.9.1 needs to build simple_ra with sudo
-	# otherwise, you get 'file open error' on fsm::fsm and the files are created owned by root
-	# and the ubuntu user cannot execute them.
-	simple_ra_sudo=sudo
+elif [ $release -eq 9 -a ! -z "$patch" ] ; then
+	# 3.7.9.x in here
+	if [ $patch -eq 1 ] ; then
+		# 3.7.9.1 needs to build simple_ra with sudo
+		# otherwise, you get 'file open error' on fsm::fsm and the files are created owned by root
+		# and the ubuntu user cannot execute them.
+		simple_ra_sudo=sudo
+	fi
 elif [ $release -eq 10 -a -z "$patch" ] ; then
 	echo "Aha!  This is that GNU Radio version with Bug #927"
 	echo "http://gnuradio.org/redmine/issues/927"
@@ -99,7 +105,7 @@ elif [ $release -eq 10 -a -z "$patch" ] ; then
 	fi
 	sudo chmod a+rwx /usr/local/bin/grcc			# and this is the file that we use
 	cp $base/python/utils/grcc /usr/local/bin/grcc
-elif [ $release -gt 10 ] ; then
+elif [ $release -gt 10 -o \( $release -eq 10 -a ! -z "$patch" \) ] ; then
 	echo "This appears to be GNU Radio version $version"
 	echo "I have not worked with GNU Radio versions greater than 3.7.10"
 	echo "so its anybody's guess what might happen."
