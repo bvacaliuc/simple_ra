@@ -43,7 +43,8 @@ patch=`echo $version | cut -d. -f4`
 echo GNURadio Version $major.$minor.$release.$patch
 
 # implement certain variants
-simple_ra_sudo=
+simple_ra_build_sudo=
+simple_ra_exec_sudo=
 
 if [ ! $major -eq 3 -o \( $major -eq 3 -a ! $minor -eq 7 \) ] ; then
 	echo "This appears to be GNU Radio version $version"
@@ -59,7 +60,7 @@ elif [ $release -lt 9 -o \( $release -eq 9 -a -z "$patch" \) ] ; then
 	echo "I have not worked with GNU Radio versions less than 3.7.9.1"
 	echo "so I might do the wrong things.  Please be patient with me..."
 	echo ""
-	echo "Hit any key to go on."
+	echo "Hit Enter to go on."
 	read _junk
 elif [ $release -eq 9 -a ! -z "$patch" ] ; then
 	# 3.7.9.x in here
@@ -67,14 +68,14 @@ elif [ $release -eq 9 -a ! -z "$patch" ] ; then
 		# 3.7.9.1 needs to build simple_ra with sudo
 		# otherwise, you get 'file open error' on fsm::fsm and the files are created owned by root
 		# and the ubuntu user cannot execute them.
-		simple_ra_sudo=sudo
+		simple_ra_build_sudo=sudo		         			simple_ra_exec_sudo=sudo
 	fi
 elif [ $release -eq 10 -a -z "$patch" ] ; then
 	echo "Aha!  This is that GNU Radio version with Bug #927"
 	echo "http://gnuradio.org/redmine/issues/927"
 	echo ""
 	echo "I am going to apply the patch and go on.  I just want you"
-	echo "to be aware of this.  Hit any key to go on."
+	echo "to be aware of this.  Hit Enter to go on."
 	read _junk
 
 	# download and obtain the patch
@@ -105,7 +106,23 @@ elif [ $release -eq 10 -a -z "$patch" ] ; then
 	fi
 	sudo chmod a+rwx /usr/local/bin/grcc			# and this is the file that we use
 	cp $base/python/utils/grcc /usr/local/bin/grcc
-elif [ $release -gt 10 -o \( $release -eq 10 -a ! -z "$patch" \) ] ; then
+elif [ $release -eq 10 -a ! -z "$patch" ] ; then
+	# 3.7.10.x in here
+	if [ $patch -eq 1 ] ; then
+		# 3.7.10.1 seems to build ok, but
+		# you get 'file open error' on fsm::fsm
+		# unless you use sudo to build it.
+		# The ubuntu user can execute ok either way
+		simple_ra_build_sudo=sudo
+	else
+		echo "This appears to be GNU Radio version $version"
+		echo "I have not tested GNU Radio versions of 3.7.10 greater than 3.7.10.1"
+		echo "so I might do the wrong things.  Please be patient with me..."
+		echo ""
+		echo "Hit Enter to go on."
+		read _junk
+	fi
+elif [ $release -gt 10 ] ; then
 	echo "This appears to be GNU Radio version $version"
 	echo "I have not worked with GNU Radio versions greater than 3.7.10"
 	echo "so its anybody's guess what might happen."
@@ -140,7 +157,7 @@ echo "bab2bda483e9f32be65b43b8dab39fa5 gawk-4.0.1.tar.gz" > ${WRITABLE}/gawk/md5
 
 # get simple_ra, build it
 (cd ${WRITABLE} ; git clone https://github.com/patchvonbraun/simple_ra.git)
-(cd ${WRITABLE}/simple_ra ; $simple_ra_sudo make ; sudo make install)
+(cd ${WRITABLE}/simple_ra ; $simple_ra_build_sudo make ; sudo make install)
 
 if [ ! -x ${HOME}/bin/simple_ra ] ; then
 	echo "Bummer.  simple_ra did not get built where I expected it."
@@ -152,11 +169,15 @@ if [ ! -x ${HOME}/bin/simple_ra ] ; then
 	exit 1
 fi
 # give a hint...
+echo ""
+echo "**********"
+echo "*** OK ***"
+echo "**********"
 echo simple_ra is probably going to work...
 echo execute it from the command line by:
 echo
 echo cd ${HOME}/bin
-echo $simple_ra_sudo ./simple_ra --devid rtl=0
+echo $simple_ra_exec_sudo ./simple_ra --devid rtl=0
 echo 
 echo and when you are running in spectral mode, be sure to press 'Autoscale'
 
