@@ -110,10 +110,9 @@ elif [ $release -eq 10 -a ! -z "$patch" ] ; then
 	# 3.7.10.x in here
 	if [ $patch -eq 1 ] ; then
 		# 3.7.10.1 seems to build ok, but
-		# you get 'file open error' on fsm::fsm
-		# unless you use sudo to build it.
+		# you still get 'file open error' on fsm::fsm
+		# even if you use sudo to build it.
 		# The ubuntu user can execute ok either way
-		simple_ra_build_sudo=sudo
 	else
 		echo "This appears to be GNU Radio version $version"
 		echo "I have not tested GNU Radio versions of 3.7.10 greater than 3.7.10.1"
