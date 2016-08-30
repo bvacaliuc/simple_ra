@@ -113,6 +113,7 @@ elif [ $release -eq 10 -a ! -z "$patch" ] ; then
 		# you still get 'file open error' on fsm::fsm
 		# even if you use sudo to build it.
 		# The ubuntu user can execute ok either way
+		echo ""
 	else
 		echo "This appears to be GNU Radio version $version"
 		echo "I have not tested GNU Radio versions of 3.7.10 greater than 3.7.10.1"
